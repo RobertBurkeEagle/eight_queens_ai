@@ -74,7 +74,7 @@ export default function Chessboard({ queens, onQueenPositionChange, isDraggable 
         key={i}
         className={cn(
           "w-full h-full",
-          isLight ? "bg-background" : "bg-accent/20"
+          isLight ? "bg-secondary/20" : "bg-primary/20"
         )}
       />
     );
@@ -83,7 +83,7 @@ export default function Chessboard({ queens, onQueenPositionChange, isDraggable 
   return (
     <div 
       ref={boardRef}
-      className="relative grid grid-cols-8 grid-rows-8 w-full aspect-square border-4 border-card-foreground/20 rounded-md overflow-hidden shadow-lg"
+      className="relative grid grid-cols-8 grid-rows-8 w-full aspect-square border-4 border-primary/50 rounded-none shadow-lg"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
@@ -97,13 +97,13 @@ export default function Chessboard({ queens, onQueenPositionChange, isDraggable 
           className={cn(
             "absolute w-[12.5%] h-[12.5%] p-1 transition-transform duration-500 ease-in-out",
             isDraggable && "cursor-grab",
-            draggingQueen?.id === queen.id && "opacity-50 cursor-grabbing"
+            draggingQueen?.id === queen.id && "opacity-50 cursor-grabbing scale-125 z-10"
           )}
           style={{
             transform: `translate(${queen.col * 100}%, ${queen.row * 100}%)`,
           }}
         >
-          <QueenIcon className="text-primary-foreground drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" />
+          <QueenIcon className="text-primary drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />
         </div>
       ))}
     </div>

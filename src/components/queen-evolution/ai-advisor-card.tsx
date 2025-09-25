@@ -7,7 +7,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,21 +68,21 @@ export default function AiAdvisorCard({ history, onApplySuggestion, disabled }: 
   }
 
   return (
-    <Card>
+    <Card className="font-display">
       <CardHeader>
-        <CardTitle>Heuristic Advisor</CardTitle>
+        <CardTitle className="uppercase tracking-widest">Heuristic Advisor</CardTitle>
         <CardDescription>
-          Get AI-powered parameter suggestions based on past performance.
+          Get AI-powered parameter suggestions.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full" onClick={handleGetSuggestion} disabled={isLoading || disabled}>
+            <Button variant="outline" className="w-full" onClick={handleGetSuggestion} disabled={isLoading || disabled}>
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Sparkles className="mr-2 h-4 w-4 text-accent" />
               )}
               Get Suggestion
             </Button>
@@ -91,19 +90,19 @@ export default function AiAdvisorCard({ history, onApplySuggestion, disabled }: 
           {suggestion && (
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>AI Suggestion</DialogTitle>
+                <DialogTitle className="font-headline uppercase tracking-widest">AI Suggestion</DialogTitle>
                 <DialogDescription>
-                  The AI has analyzed recent simulations and suggests the following parameters.
+                  The AI suggests the following parameters based on recent simulations.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="p-4 bg-secondary rounded-lg">
-                  <h4 className="font-semibold">Suggested Parameters</h4>
+              <div className="space-y-4 py-4 font-display">
+                <div className="p-4 bg-secondary rounded-none">
+                  <h4 className="font-bold text-lg">Suggested Parameters</h4>
                   <p>Population Size: <span className="font-bold text-primary">{suggestion.populationSize}</span></p>
                   <p>Mutation Rate: <span className="font-bold text-primary">{(suggestion.mutationRate * 100).toFixed(1)}%</span></p>
                 </div>
                 <div>
-                  <h4 className="font-semibold">Reasoning</h4>
+                  <h4 className="font-bold text-lg">Reasoning</h4>
                   <p className="text-sm text-muted-foreground">{suggestion.reasoning}</p>
                 </div>
               </div>

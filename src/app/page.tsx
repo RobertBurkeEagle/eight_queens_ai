@@ -44,26 +44,12 @@ export default function Home() {
 
   const resetSimulation = useCallback(() => {
     setSimulationState("stopped");
-    let initialPopulation = createInitialPopulation(populationSize);
-    let bestInitial = initialPopulation.reduce((best, current) =>
-      current.fitness > best.fitness ? current : best
-    );
-
-    if (bestInitial.fitness > 10) {
-      const acceptableIndividual = createAcceptableInitialIndividual();
-      // Replace the worst individual with our acceptable one
-      let worstIndex = 0;
-      for (let i = 1; i < initialPopulation.length; i++) {
-        if (initialPopulation[i].fitness < initialPopulation[worstIndex].fitness) {
-          worstIndex = i;
-        }
-      }
-      initialPopulation[worstIndex] = acceptableIndividual;
-      bestInitial = acceptableIndividual;
-    }
+    const acceptableIndividual = createAcceptableInitialIndividual();
+    let initialPopulation = createInitialPopulation(populationSize-1);
+    initialPopulation.push(acceptableIndividual)
 
     populationRef.current = initialPopulation;
-    setBestIndividual(bestInitial);
+    setBestIndividual(acceptableIndividual);
     setGeneration(0);
   }, [populationSize]);
 
@@ -76,7 +62,9 @@ export default function Home() {
 
     let currentPopulation = populationRef.current;
     if (currentPopulation.length === 0) {
-      currentPopulation = createInitialPopulation(populationSize);
+      const acceptableIndividual = createAcceptableInitialIndividual();
+      currentPopulation = createInitialPopulation(populationSize - 1);
+      currentPopulation.push(acceptableIndividual);
     }
     
     const newPopulation = evolve(currentPopulation, mutationRate);
@@ -158,11 +146,11 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground font-body p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary-foreground tracking-tight">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary-foreground tracking-widest uppercase">
             Queens Evolution
           </h1>
-          <p className="mt-2 text-lg text-muted-foreground">
+          <p className="mt-4 text-lg text-muted-foreground font-display">
             Solving the 8-Queens Puzzle with a Genetic Algorithm
           </p>
         </header>

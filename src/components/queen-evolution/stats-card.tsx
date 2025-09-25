@@ -23,19 +23,19 @@ export default function StatsCard({
   const fitnessPercentage = (fitness / maxFitness) * 100;
   
   return (
-    <Card>
+    <Card className="font-display">
       <CardHeader>
-        <CardTitle>Statistics</CardTitle>
+        <CardTitle className="uppercase tracking-widest">Statistics</CardTitle>
         <CardDescription>Real-time simulation data.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex justify-between items-baseline">
-          <p className="text-sm font-medium text-muted-foreground">Generation</p>
+          <p className="text-sm font-medium text-muted-foreground">GENERATION</p>
           <p className="text-2xl font-bold text-primary">{generation.toLocaleString()}</p>
         </div>
         <div className="space-y-2">
           <div className="flex justify-between items-baseline">
-            <p className="text-sm font-medium text-muted-foreground">Best Fitness</p>
+            <p className="text-sm font-medium text-muted-foreground">FITNESS</p>
             <p className="text-2xl font-bold text-primary">
               {fitness}/{maxFitness}
             </p>

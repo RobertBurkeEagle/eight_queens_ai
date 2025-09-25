@@ -38,11 +38,11 @@ export default function ControlsCard({
   const isRunning = simulationState === "running";
 
   return (
-    <Card>
+    <Card className="font-display">
       <CardHeader>
-        <CardTitle>Simulation Controls</CardTitle>
+        <CardTitle className="uppercase tracking-widest">Controls</CardTitle>
         <CardDescription>
-          Run the algorithm and adjust its parameters.
+          Adjust parameters and run the simulation.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -58,7 +58,7 @@ export default function ControlsCard({
           <Button
             onClick={onPause}
             disabled={!isRunning}
-            variant="outline"
+            variant="secondary"
             className="flex-1"
           >
             <Pause className="mr-2 h-4 w-4" />
@@ -66,10 +66,10 @@ export default function ControlsCard({
           </Button>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-4 pt-4">
           <div>
             <div className="flex justify-between items-center mb-2">
-              <Label htmlFor="population-slider">Population Size</Label>
+              <Label htmlFor="population-slider">Population</Label>
               <span className="text-sm font-medium text-primary">{populationSize}</span>
             </div>
             <Slider
@@ -84,8 +84,8 @@ export default function ControlsCard({
           </div>
           <div>
             <div className="flex justify-between items-center mb-2">
-              <Label htmlFor="mutation-slider">Mutation Rate</Label>
-              <span className="text-sm font-medium text-primary">{(mutationRate * 100).toFixed(1)}%</span>
+              <Label htmlFor="mutation-slider">Mutation</Label>
+              <span className="text-sm font-medium text-primary">{(mutationRate * 100).toFixed(0)}%</span>
             </div>
             <Slider
               id="mutation-slider"
@@ -101,7 +101,7 @@ export default function ControlsCard({
 
         <Button onClick={onReset} variant="destructive" className="w-full">
           <RotateCw className="mr-2 h-4 w-4" />
-          Reset Simulation
+          Reset
         </Button>
       </CardContent>
     </Card>
