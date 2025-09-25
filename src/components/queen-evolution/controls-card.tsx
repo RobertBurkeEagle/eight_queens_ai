@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -11,20 +10,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, RotateCw, Eye, Sparkles } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Play, Pause, RotateCw } from "lucide-react";
 
 interface ControlsCardProps {
   simulationState: "stopped" | "running" | "paused";
   populationSize: number;
   mutationRate: number;
-  displayMode: 'random' | 'best';
   onStart: () => void;
   onPause: () => void;
   onReset: () => void;
   onPopulationChange: (value: number) => void;
   onMutationRateChange: (value: number) => void;
-  onToggleDisplayMode: () => void;
   isSolved: boolean;
 }
 
@@ -32,13 +28,11 @@ export default function ControlsCard({
   simulationState,
   populationSize,
   mutationRate,
-  displayMode,
   onStart,
   onPause,
   onReset,
   onPopulationChange,
   onMutationRateChange,
-  onToggleDisplayMode,
   isSolved,
 }: ControlsCardProps) {
   const isRunning = simulationState === "running";
@@ -101,18 +95,6 @@ export default function ControlsCard({
               value={[mutationRate]}
               onValueChange={(value) => onMutationRateChange(value[0])}
               disabled={isRunning}
-            />
-          </div>
-          <div className="flex items-center justify-between pt-2">
-            <Label htmlFor="display-mode-toggle" className="flex items-center gap-2">
-              {displayMode === 'best' ? <Eye className="text-primary" /> : <Sparkles className="text-accent"/>}
-              <span>Show {displayMode === 'best' ? 'Best Individual' : 'Random Individuals'}</span>
-            </Label>
-            <Switch
-              id="display-mode-toggle"
-              checked={displayMode === 'best'}
-              onCheckedChange={onToggleDisplayMode}
-              disabled={!isRunning}
             />
           </div>
         </div>
