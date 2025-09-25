@@ -50,6 +50,7 @@ export default function Home() {
     useState<Individual | null>(null);
   const [simulationHistory, setSimulationHistory] = useState<any[]>([]);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [displayMode, setDisplayMode] = useState<'random' | 'best'>('random');
 
   const populationRef = useRef<Population>([]);
   const animationFrameId = useRef<number>();
@@ -137,13 +138,17 @@ export default function Home() {
   useEffect(() => {
     let displayInterval: NodeJS.Timeout | undefined;
 
-    if (simulationState === 'running' && populationRef.current.length > 0) {
-      displayInterval = setInterval(() => {
-        const randomIndex = Math.floor(Math.random() * populationRef.current.length);
-        setDisplayIndividual(populationRef.current[randomIndex]);
-      }, 1000);
-    } else if (bestIndividual) {
+    if (simulationState === 'running') {
+      if (displayMode === 'random' && populationRef.current.length > 0) {
+        displayInterval = setInterval(() => {
+          const randomIndex = Math.floor(Math.random() * populationRef.current.length);
+          setDisplayIndividual(populationRef.current[randomIndex]);
+        }, 1000);
+      } else {
         setDisplayIndividual(bestIndividual);
+      }
+    } else if (bestIndividual) {
+      setDisplayIndividual(bestIndividual);
     }
 
     return () => {
@@ -151,7 +156,7 @@ export default function Home() {
         clearInterval(displayInterval);
       }
     };
-  }, [simulationState, bestIndividual]);
+  }, [simulationState, bestIndividual, displayMode]);
 
 
   const handleStart = () => {
@@ -201,6 +206,10 @@ export default function Home() {
     }
   };
 
+  const handleToggleDisplayMode = () => {
+    setDisplayMode(prev => prev === 'random' ? 'best' : 'random');
+  };
+
   if (!displayIndividual || !bestIndividual) {
     return (
         <main className="min-h-screen bg-background text-foreground font-body p-4 sm:p-6 lg:p-8 flex items-center justify-center">
@@ -246,11 +255,13 @@ export default function Home() {
               simulationState={simulationState}
               populationSize={populationSize}
               mutationRate={mutationRate}
+              displayMode={displayMode}
               onStart={handleStart}
               onPause={handlePause}
               onReset={handleReset}
               onPopulationChange={setPopulationSize}
               onMutationRateChange={setMutationRate}
+              onToggleDisplayMode={handleToggleDisplayMode}
               isSolved={bestIndividual.fitness === MAX_FITNESS}
             />
             <AiAdvisorCard
