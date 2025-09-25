@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -13,15 +14,23 @@ interface StatsCardProps {
   generation: number;
   fitness: number;
   maxFitness: number;
+  elapsedTime: number;
 }
 
 export default function StatsCard({
   generation,
   fitness,
   maxFitness,
+  elapsedTime,
 }: StatsCardProps) {
   const fitnessPercentage = (fitness / maxFitness) * 100;
   
+  const formatTime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000);
+    const milliseconds = Math.floor(ms % 1000);
+    return `${seconds}.${milliseconds.toString().padStart(3, '0')}`;
+  };
+
   return (
     <Card className="font-display">
       <CardHeader>
@@ -42,6 +51,12 @@ export default function StatsCard({
           </div>
           <Progress value={fitnessPercentage} aria-label={`${fitnessPercentage.toFixed(0)}% complete`} />
         </div>
+        <div className="flex justify-between items-baseline">
+            <p className="text-sm font-medium text-muted-foreground">TIME</p>
+            <p className="text-2xl font-bold text-primary">
+              {formatTime(elapsedTime)}s
+            </p>
+          </div>
       </CardContent>
     </Card>
   );

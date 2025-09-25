@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'Queens Evolutions',
+  title: 'Queens Evolution',
   description: 'A real-time visualization app for solving the 8-Queens problem using genetic algorithms.',
 };
 

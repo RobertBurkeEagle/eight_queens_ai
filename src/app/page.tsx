@@ -49,9 +49,11 @@ export default function Home() {
   const [displayIndividual, setDisplayIndividual] =
     useState<Individual | null>(null);
   const [simulationHistory, setSimulationHistory] = useState<any[]>([]);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   const populationRef = useRef<Population>([]);
   const animationFrameId = useRef<number>();
+  const startTimeRef = useRef<number>(0);
 
   const resetSimulation = useCallback(() => {
     setSimulationState("stopped");
@@ -63,6 +65,7 @@ export default function Home() {
     setBestIndividual(acceptableIndividual);
     setDisplayIndividual(acceptableIndividual);
     setGeneration(0);
+    setElapsedTime(0);
   }, [populationSize]);
 
   useEffect(() => {
@@ -96,6 +99,8 @@ export default function Home() {
 
     setGeneration((prev) => prev + 1);
     setBestIndividual(bestInGeneration);
+    setElapsedTime(performance.now() - startTimeRef.current);
+
 
     if (bestInGeneration.fitness === MAX_FITNESS) {
       setSimulationState("stopped");
@@ -105,6 +110,7 @@ export default function Home() {
         mutationRate,
         generations: generation + 1,
         finalFitness: bestInGeneration.fitness,
+        time: performance.now() - startTimeRef.current,
       }]);
     } else {
       animationFrameId.current = requestAnimationFrame(runSimulation);
@@ -146,6 +152,7 @@ export default function Home() {
     if (simulationState === 'stopped' || (bestIndividual && bestIndividual.fitness === MAX_FITNESS)) {
       resetSimulation();
     }
+    startTimeRef.current = performance.now();
     setSimulationState("running");
   };
 
@@ -223,6 +230,7 @@ export default function Home() {
               generation={generation}
               fitness={bestIndividual.fitness}
               maxFitness={MAX_FITNESS}
+              elapsedTime={elapsedTime}
             />
             <ControlsCard
               simulationState={simulationState}
