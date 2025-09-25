@@ -6,11 +6,21 @@ export const MAX_FITNESS = (BOARD_SIZE * (BOARD_SIZE - 1)) / 2; // 28 for 8 quee
 
 export function createChromosome(): Chromosome {
   const chromosome: Chromosome = [];
+  const positions = new Set<string>();
+
   for (let i = 0; i < BOARD_SIZE; i++) {
+    let row, col, posKey;
+    do {
+      row = Math.floor(Math.random() * BOARD_SIZE);
+      col = Math.floor(Math.random() * BOARD_SIZE);
+      posKey = `${row},${col}`;
+    } while (positions.has(posKey));
+
+    positions.add(posKey);
     chromosome.push({
       id: i,
-      row: Math.floor(Math.random() * BOARD_SIZE),
-      col: Math.floor(Math.random() * BOARD_SIZE),
+      row,
+      col,
     });
   }
   return chromosome;
@@ -78,21 +88,38 @@ function crossover(parent1: Chromosome, parent2: Chromosome): [Chromosome, Chrom
 
 
 function mutate(chromosome: Chromosome, mutationRate: number): Chromosome {
-  return chromosome.map(queen => {
+  const newChromosome = [...chromosome];
+  const positions = new Set(newChromosome.map(q => `${q.row},${q.col}`));
+
+  return newChromosome.map(queen => {
     if (Math.random() < mutationRate) {
-      // Small chance to move to a completely new random square
-      if (Math.random() < 0.1) {
-        return {
-          ...queen,
-          row: Math.floor(Math.random() * BOARD_SIZE),
-          col: Math.floor(Math.random() * BOARD_SIZE),
+      let newRow, newCol, posKey;
+      
+      // Attempt to find an empty square for the mutated queen
+      let attempts = 0;
+      const maxAttempts = BOARD_SIZE * BOARD_SIZE; // Avoid infinite loops
+
+      do {
+        // Small chance to move to a completely new random square
+        if (Math.random() < 0.1 || attempts > 20) {
+          newRow = Math.floor(Math.random() * BOARD_SIZE);
+          newCol = Math.floor(Math.random() * BOARD_SIZE);
+        } else {
+          // Nudge the queen to an adjacent square
+          const rowChange = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+          const colChange = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+          newRow = Math.max(0, Math.min(BOARD_SIZE - 1, queen.row + rowChange));
+          newCol = Math.max(0, Math.min(BOARD_SIZE - 1, queen.col + colChange));
         }
-      }
-      // Nudge the queen to an adjacent square
-      const rowChange = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-      const colChange = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-      const newRow = Math.max(0, Math.min(BOARD_SIZE - 1, queen.row + rowChange));
-      const newCol = Math.max(0, Math.min(BOARD_SIZE - 1, queen.col + colChange));
+        posKey = `${newRow},${newCol}`;
+        attempts++;
+      } while (positions.has(posKey) && attempts < maxAttempts);
+
+
+      // Update positions set for next mutations in the same generation
+      positions.delete(`${queen.row},${queen.col}`);
+      positions.add(posKey);
+
       return { ...queen, row: newRow, col: newCol };
     }
     return queen;
