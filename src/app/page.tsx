@@ -157,7 +157,7 @@ export default function Home() {
     <main className="min-h-screen bg-background text-foreground font-body p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="text-center mb-12 relative">
-          <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary-foreground tracking-widest uppercase">
+          <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary tracking-widest uppercase">
             Queens Evolution
           </h1>
           <p className="mt-4 text-lg text-muted-foreground font-display">
