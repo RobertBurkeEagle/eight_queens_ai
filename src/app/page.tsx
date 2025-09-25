@@ -37,11 +37,17 @@ export default function Home() {
 
   const resetSimulation = useCallback(() => {
     setSimulationState("stopped");
-    const initialPopulation = createInitialPopulation(populationSize);
+    let initialPopulation: Population;
+    let bestInitial: Individual;
+
+    do {
+      initialPopulation = createInitialPopulation(populationSize);
+      bestInitial = initialPopulation.reduce((best, current) =>
+        current.fitness > best.fitness ? current : best
+      );
+    } while (bestInitial.fitness > 5);
+    
     populationRef.current = initialPopulation;
-    const bestInitial = initialPopulation.reduce((best, current) =>
-      current.fitness > best.fitness ? current : best
-    );
     setBestIndividual(bestInitial);
     setGeneration(0);
   }, [populationSize]);
