@@ -1,3 +1,4 @@
+
 import type { Chromosome, Individual, Population } from "./types";
 
 const BOARD_SIZE = 8;
@@ -18,7 +19,7 @@ function shuffle(array: number[]): number[] {
   return array;
 }
 
-function createChromosome(): Chromosome {
+export function createChromosome(): Chromosome {
   const initial = Array.from({ length: BOARD_SIZE }, (_, i) => i);
   return shuffle(initial);
 }

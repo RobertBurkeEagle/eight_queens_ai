@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -5,6 +6,8 @@ import {
   createInitialPopulation,
   evolve,
   MAX_FITNESS,
+  createChromosome,
+  calculateFitness
 } from "@/lib/genetic-algorithm";
 import type { Chromosome, Individual, Population } from "@/lib/types";
 import Chessboard from "@/components/queen-evolution/chessboard";
@@ -12,10 +15,10 @@ import StatsCard from "@/components/queen-evolution/stats-card";
 import ControlsCard from "@/components/queen-evolution/controls-card";
 import AiAdvisorCard from "@/components/queen-evolution/ai-advisor-card";
 
-const initialChromosome: Chromosome = [0, 1, 2, 3, 4, 5, 6, 7];
+const initialChromosome: Chromosome = createChromosome();
 const initialIndividual: Individual = {
   chromosome: initialChromosome,
-  fitness: 0,
+  fitness: calculateFitness(initialChromosome),
 };
 
 export default function Home() {
@@ -105,6 +108,31 @@ export default function Home() {
     resetSimulation();
   };
 
+  const handleQueenPositionChange = (newChromosome: Chromosome) => {
+    if (simulationState !== "running") {
+      const newFitness = calculateFitness(newChromosome);
+      setBestIndividual({ chromosome: newChromosome, fitness: newFitness });
+      
+      // We can also update the population if we want the algorithm to start from the manual position
+      const newIndividual = { chromosome: newChromosome, fitness: newFitness };
+      const currentPopulation = populationRef.current;
+      if (currentPopulation.length > 0) {
+        // Replace the worst individual with the new one
+        let worstIndex = 0;
+        for (let i = 1; i < currentPopulation.length; i++) {
+          if (currentPopulation[i].fitness < currentPopulation[worstIndex].fitness) {
+            worstIndex = i;
+          }
+        }
+        const newPopulation = [...currentPopulation];
+        newPopulation[worstIndex] = newIndividual;
+        populationRef.current = newPopulation;
+      } else {
+        populationRef.current = [newIndividual];
+      }
+    }
+  };
+
 
   return (
     <main className="min-h-screen bg-background text-foreground font-body p-4 sm:p-6 lg:p-8">
@@ -121,7 +149,11 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2 flex justify-center items-start">
             <div className="w-full max-w-2xl aspect-square">
-              <Chessboard queens={bestIndividual.chromosome} />
+              <Chessboard 
+                queens={bestIndividual.chromosome}
+                onQueenPositionChange={handleQueenPositionChange}
+                isDraggable={simulationState !== "running"}
+              />
             </div>
           </div>
 
