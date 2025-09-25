@@ -14,15 +14,25 @@ import Chessboard from "@/components/queen-evolution/chessboard";
 import StatsCard from "@/components/queen-evolution/stats-card";
 import ControlsCard from "@/components/queen-evolution/controls-card";
 import AiAdvisorCard from "@/components/queen-evolution/ai-advisor-card";
+import ThemeSelector from "@/components/queen-evolution/theme-selector";
 
 const createAcceptableInitialIndividual = (): Individual => {
   let individual: Individual;
   let fitness = 0;
+  let attempts = 0;
   do {
     const chromosome = createChromosome();
     fitness = calculateFitness(chromosome);
     individual = { chromosome, fitness };
-  } while (fitness > 10);
+    attempts++;
+  } while (fitness > 10 && attempts < 1000); // Add attempt limit to prevent infinite loops
+  
+  if (fitness > 10) {
+    // Fallback if a suitable individual isn't found quickly
+    const chromosome = createChromosome();
+    individual = { chromosome, fitness: calculateFitness(chromosome) };
+  }
+
   return individual;
 }
 
@@ -45,7 +55,7 @@ export default function Home() {
   const resetSimulation = useCallback(() => {
     setSimulationState("stopped");
     const acceptableIndividual = createAcceptableInitialIndividual();
-    let initialPopulation = createInitialPopulation(populationSize-1);
+    let initialPopulation = createInitialPopulation(populationSize-1, acceptableIndividual.chromosome);
     initialPopulation.push(acceptableIndividual)
 
     populationRef.current = initialPopulation;
@@ -63,7 +73,7 @@ export default function Home() {
     let currentPopulation = populationRef.current;
     if (currentPopulation.length === 0) {
       const acceptableIndividual = createAcceptableInitialIndividual();
-      currentPopulation = createInitialPopulation(populationSize - 1);
+      currentPopulation = createInitialPopulation(populationSize - 1, acceptableIndividual.chromosome);
       currentPopulation.push(acceptableIndividual);
     }
     
@@ -135,7 +145,7 @@ export default function Home() {
         newPopulation[worstIndex] = newIndividual;
         populationRef.current = newPopulation;
       } else {
-        const initialPop = createInitialPopulation(populationSize);
+        const initialPop = createInitialPopulation(populationSize, newIndividual.chromosome);
         initialPop[0] = newIndividual;
         populationRef.current = initialPop;
       }
@@ -146,13 +156,16 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground font-body p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="text-center mb-12">
+        <header className="text-center mb-12 relative">
           <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary-foreground tracking-widest uppercase">
             Queens Evolution
           </h1>
           <p className="mt-4 text-lg text-muted-foreground font-display">
             Solving the 8-Queens Puzzle with a Genetic Algorithm
           </p>
+          <div className="absolute top-0 right-0">
+            <ThemeSelector />
+          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">

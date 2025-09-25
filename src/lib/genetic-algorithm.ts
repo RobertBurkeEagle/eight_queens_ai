@@ -45,10 +45,26 @@ export function calculateFitness(chromosome: Chromosome): number {
   return MAX_FITNESS - clashes;
 }
 
-export function createInitialPopulation(size: number): Population {
+export function createInitialPopulation(size: number, initialChromosome?: Chromosome): Population {
   const population: Population = [];
+  const usedPositions = new Set<string>(initialChromosome?.map(q => `${q.row},${q.col}`) ?? []);
+
   for (let i = 0; i < size; i++) {
-    const chromosome = createChromosome();
+    const chromosome: Chromosome = [];
+    const localUsedPositions = new Set(usedPositions);
+
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      let row, col, posKey;
+      do {
+        row = Math.floor(Math.random() * BOARD_SIZE);
+        col = Math.floor(Math.random() * BOARD_SIZE);
+        posKey = `${row},${col}`;
+      } while (localUsedPositions.has(posKey));
+      
+      localUsedPositions.add(posKey);
+      chromosome.push({ id: j, row, col });
+    }
+
     const fitness = calculateFitness(chromosome);
     population.push({ chromosome, fitness });
   }
@@ -73,17 +89,40 @@ function crossover(parent1: Chromosome, parent2: Chromosome): [Chromosome, Chrom
     const size = parent1.length;
     const crossoverPoint = Math.floor(Math.random() * (size - 1)) + 1;
     
-    const child1Chromosome = [
+    let child1Chromosome = [
         ...parent1.slice(0, crossoverPoint),
         ...parent2.slice(crossoverPoint)
     ].map((queen, index) => ({ ...queen, id: index }));
 
-    const child2Chromosome = [
+    let child2Chromosome = [
         ...parent2.slice(0, crossoverPoint),
         ...parent1.slice(crossoverPoint)
     ].map((queen, index) => ({ ...queen, id: index }));
+    
+    child1Chromosome = resolveCollisions(child1Chromosome);
+    child2Chromosome = resolveCollisions(child2Chromosome);
 
     return [child1Chromosome, child2Chromosome];
+}
+
+function resolveCollisions(chromosome: Chromosome): Chromosome {
+    const positions = new Set<string>();
+    const newChromosome = [...chromosome];
+
+    for (let i = 0; i < newChromosome.length; i++) {
+        let posKey = `${newChromosome[i].row},${newChromosome[i].col}`;
+        if (positions.has(posKey)) {
+            let newRow, newCol;
+            do {
+                newRow = Math.floor(Math.random() * BOARD_SIZE);
+                newCol = Math.floor(Math.random() * BOARD_SIZE);
+                posKey = `${newRow},${newCol}`;
+            } while (positions.has(posKey));
+            newChromosome[i] = { ...newChromosome[i], row: newRow, col: newCol };
+        }
+        positions.add(posKey);
+    }
+    return newChromosome;
 }
 
 
@@ -93,34 +132,24 @@ function mutate(chromosome: Chromosome, mutationRate: number): Chromosome {
 
   return newChromosome.map(queen => {
     if (Math.random() < mutationRate) {
+      const originalPosKey = `${queen.row},${queen.col}`;
       let newRow, newCol, posKey;
       
-      // Attempt to find an empty square for the mutated queen
       let attempts = 0;
-      const maxAttempts = BOARD_SIZE * BOARD_SIZE; // Avoid infinite loops
+      const maxAttempts = BOARD_SIZE * BOARD_SIZE;
 
       do {
-        // Small chance to move to a completely new random square
-        if (Math.random() < 0.1 || attempts > 20) {
-          newRow = Math.floor(Math.random() * BOARD_SIZE);
-          newCol = Math.floor(Math.random() * BOARD_SIZE);
-        } else {
-          // Nudge the queen to an adjacent square
-          const rowChange = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-          const colChange = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-          newRow = Math.max(0, Math.min(BOARD_SIZE - 1, queen.row + rowChange));
-          newCol = Math.max(0, Math.min(BOARD_SIZE - 1, queen.col + colChange));
-        }
+        newRow = Math.floor(Math.random() * BOARD_SIZE);
+        newCol = Math.floor(Math.random() * BOARD_SIZE);
         posKey = `${newRow},${newCol}`;
         attempts++;
       } while (positions.has(posKey) && attempts < maxAttempts);
 
-
-      // Update positions set for next mutations in the same generation
-      positions.delete(`${queen.row},${queen.col}`);
-      positions.add(posKey);
-
-      return { ...queen, row: newRow, col: newCol };
+      if (attempts < maxAttempts) {
+        positions.delete(originalPosKey);
+        positions.add(posKey);
+        return { ...queen, row: newRow, col: newCol };
+      }
     }
     return queen;
   });
