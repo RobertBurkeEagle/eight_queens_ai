@@ -36,7 +36,6 @@ const createAcceptableInitialIndividual = (): Individual => {
   return individual;
 }
 
-const initialIndividual = createAcceptableInitialIndividual();
 
 export default function Home() {
   const [populationSize, setPopulationSize] = useState(100);
@@ -46,9 +45,9 @@ export default function Home() {
   >("stopped");
   const [generation, setGeneration] = useState(0);
   const [bestIndividual, setBestIndividual] =
-    useState<Individual>(initialIndividual);
+    useState<Individual | null>(null);
   const [displayIndividual, setDisplayIndividual] =
-    useState<Individual>(initialIndividual);
+    useState<Individual | null>(null);
   const [simulationHistory, setSimulationHistory] = useState<any[]>([]);
 
   const populationRef = useRef<Population>([]);
@@ -67,8 +66,16 @@ export default function Home() {
   }, [populationSize]);
 
   useEffect(() => {
-    resetSimulation();
-  }, [resetSimulation]);
+    // This effect runs only on the client, after initial render
+    // It prevents the hydration error.
+    const initialIndividual = createAcceptableInitialIndividual();
+    setBestIndividual(initialIndividual);
+    setDisplayIndividual(initialIndividual);
+
+    let initialPopulation = createInitialPopulation(populationSize - 1, initialIndividual.chromosome);
+    initialPopulation.push(initialIndividual);
+    populationRef.current = initialPopulation;
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const runSimulation = useCallback(() => {
     if (simulationState !== "running") return;
@@ -123,7 +130,7 @@ export default function Home() {
         const randomIndex = Math.floor(Math.random() * populationRef.current.length);
         setDisplayIndividual(populationRef.current[randomIndex]);
       }, 1000);
-    } else {
+    } else if (bestIndividual) {
         setDisplayIndividual(bestIndividual);
     }
 
@@ -136,7 +143,7 @@ export default function Home() {
 
 
   const handleStart = () => {
-    if (simulationState === 'stopped' || bestIndividual.fitness === MAX_FITNESS) {
+    if (simulationState === 'stopped' || (bestIndividual && bestIndividual.fitness === MAX_FITNESS)) {
       resetSimulation();
     }
     setSimulationState("running");
@@ -177,6 +184,13 @@ export default function Home() {
     }
   };
 
+  if (!displayIndividual || !bestIndividual) {
+    return (
+        <main className="min-h-screen bg-background text-foreground font-body p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+            <p>Loading...</p>
+        </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground font-body p-4 sm:p-6 lg:p-8">
