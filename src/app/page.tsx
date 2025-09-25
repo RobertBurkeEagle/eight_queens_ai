@@ -15,11 +15,18 @@ import StatsCard from "@/components/queen-evolution/stats-card";
 import ControlsCard from "@/components/queen-evolution/controls-card";
 import AiAdvisorCard from "@/components/queen-evolution/ai-advisor-card";
 
-const initialChromosome: Chromosome = createChromosome();
-const initialIndividual: Individual = {
-  chromosome: initialChromosome,
-  fitness: calculateFitness(initialChromosome),
-};
+const createAcceptableInitialIndividual = (): Individual => {
+  let individual: Individual;
+  let fitness = 0;
+  do {
+    const chromosome = createChromosome();
+    fitness = calculateFitness(chromosome);
+    individual = { chromosome, fitness };
+  } while (fitness > 10);
+  return individual;
+}
+
+const initialIndividual = createAcceptableInitialIndividual();
 
 export default function Home() {
   const [populationSize, setPopulationSize] = useState(100);
@@ -37,16 +44,24 @@ export default function Home() {
 
   const resetSimulation = useCallback(() => {
     setSimulationState("stopped");
-    let initialPopulation: Population;
-    let bestInitial: Individual;
+    let initialPopulation = createInitialPopulation(populationSize);
+    let bestInitial = initialPopulation.reduce((best, current) =>
+      current.fitness > best.fitness ? current : best
+    );
 
-    do {
-      initialPopulation = createInitialPopulation(populationSize);
-      bestInitial = initialPopulation.reduce((best, current) =>
-        current.fitness > best.fitness ? current : best
-      );
-    } while (bestInitial.fitness > 5);
-    
+    if (bestInitial.fitness > 10) {
+      const acceptableIndividual = createAcceptableInitialIndividual();
+      // Replace the worst individual with our acceptable one
+      let worstIndex = 0;
+      for (let i = 1; i < initialPopulation.length; i++) {
+        if (initialPopulation[i].fitness < initialPopulation[worstIndex].fitness) {
+          worstIndex = i;
+        }
+      }
+      initialPopulation[worstIndex] = acceptableIndividual;
+      bestInitial = acceptableIndividual;
+    }
+
     populationRef.current = initialPopulation;
     setBestIndividual(bestInitial);
     setGeneration(0);
