@@ -14,28 +14,19 @@ import Chessboard from "@/components/queen-evolution/chessboard";
 import StatsCard from "@/components/queen-evolution/stats-card";
 import ControlsCard from "@/components/queen-evolution/controls-card";
 import AiAdvisorCard from "@/components/queen-evolution/ai-advisor-card";
-import ThemeSelector from "@/components/queen-evolution/theme-selector";
 
 const createAcceptableInitialIndividual = (): Individual => {
   let individual: Individual;
   let fitness = 0;
-  let attempts = 0;
   do {
     const chromosome = createChromosome();
     fitness = calculateFitness(chromosome);
     individual = { chromosome, fitness };
-    attempts++;
-  } while (fitness > 10 && attempts < 1000); // Add attempt limit to prevent infinite loops
-  
-  if (fitness > 10) {
-    // Fallback if a suitable individual isn't found quickly
-    const chromosome = createChromosome();
-    individual = { chromosome, fitness: calculateFitness(chromosome) };
-  }
-
+  } while (fitness > 10);
   return individual;
 }
 
+const initialIndividual = createAcceptableInitialIndividual();
 
 export default function Home() {
   const [populationSize, setPopulationSize] = useState(100);
@@ -45,45 +36,26 @@ export default function Home() {
   >("stopped");
   const [generation, setGeneration] = useState(0);
   const [bestIndividual, setBestIndividual] =
-    useState<Individual | null>(null);
-  const [displayIndividual, setDisplayIndividual] =
-    useState<Individual | null>(null);
+    useState<Individual>(initialIndividual);
   const [simulationHistory, setSimulationHistory] = useState<any[]>([]);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [displayMode, setDisplayMode] = useState<'random' | 'best'>('random');
 
   const populationRef = useRef<Population>([]);
   const animationFrameId = useRef<number>();
-  const startTimeRef = useRef<number>(0);
-  const pausedTimeRef = useRef<number>(0);
 
   const resetSimulation = useCallback(() => {
     setSimulationState("stopped");
     const acceptableIndividual = createAcceptableInitialIndividual();
-    let initialPopulation = createInitialPopulation(populationSize-1, acceptableIndividual.chromosome);
+    let initialPopulation = createInitialPopulation(populationSize-1);
     initialPopulation.push(acceptableIndividual)
 
     populationRef.current = initialPopulation;
     setBestIndividual(acceptableIndividual);
-    setDisplayIndividual(acceptableIndividual);
     setGeneration(0);
-    setElapsedTime(0);
-    pausedTimeRef.current = 0;
   }, [populationSize]);
 
   useEffect(() => {
-    // This effect runs only on the client, after initial render
-    // It prevents the hydration error.
-    if (typeof window !== 'undefined') {
-      const initialIndividual = createAcceptableInitialIndividual();
-      setBestIndividual(initialIndividual);
-      setDisplayIndividual(initialIndividual);
-
-      let initialPopulation = createInitialPopulation(populationSize - 1, initialIndividual.chromosome);
-      initialPopulation.push(initialIndividual);
-      populationRef.current = initialPopulation;
-    }
-  }, []); // Empty dependency array ensures this runs only once on mount
+    resetSimulation();
+  }, [resetSimulation]);
 
   const runSimulation = useCallback(() => {
     if (simulationState !== "running") return;
@@ -91,7 +63,7 @@ export default function Home() {
     let currentPopulation = populationRef.current;
     if (currentPopulation.length === 0) {
       const acceptableIndividual = createAcceptableInitialIndividual();
-      currentPopulation = createInitialPopulation(populationSize - 1, acceptableIndividual.chromosome);
+      currentPopulation = createInitialPopulation(populationSize - 1);
       currentPopulation.push(acceptableIndividual);
     }
     
@@ -104,21 +76,15 @@ export default function Home() {
 
     setGeneration((prev) => prev + 1);
     setBestIndividual(bestInGeneration);
-    setElapsedTime(pausedTimeRef.current + (performance.now() - startTimeRef.current));
-
 
     if (bestInGeneration.fitness === MAX_FITNESS) {
       setSimulationState("stopped");
-      setDisplayIndividual(bestInGeneration);
-      const finalTime = pausedTimeRef.current + (performance.now() - startTimeRef.current);
       setSimulationHistory(prev => [...prev, {
         populationSize,
         mutationRate,
         generations: generation + 1,
         finalFitness: bestInGeneration.fitness,
-        time: finalTime,
       }]);
-      setElapsedTime(finalTime);
     } else {
       animationFrameId.current = requestAnimationFrame(runSimulation);
     }
@@ -135,43 +101,14 @@ export default function Home() {
     };
   }, [simulationState, runSimulation]);
 
-  useEffect(() => {
-    let displayInterval: NodeJS.Timeout | undefined;
-
-    if (simulationState === 'running') {
-      if (displayMode === 'random' && populationRef.current.length > 0) {
-        displayInterval = setInterval(() => {
-          const randomIndex = Math.floor(Math.random() * populationRef.current.length);
-          setDisplayIndividual(populationRef.current[randomIndex]);
-        }, 1000);
-      } else {
-        setDisplayIndividual(bestIndividual);
-      }
-    } else if (bestIndividual) {
-      setDisplayIndividual(bestIndividual);
-    }
-
-    return () => {
-      if (displayInterval) {
-        clearInterval(displayInterval);
-      }
-    };
-  }, [simulationState, bestIndividual, displayMode]);
-
-
   const handleStart = () => {
-    if (simulationState === 'stopped' || (bestIndividual && bestIndividual.fitness === MAX_FITNESS)) {
+    if (simulationState === 'stopped' || bestIndividual.fitness === MAX_FITNESS) {
       resetSimulation();
-      pausedTimeRef.current = 0;
     }
-    startTimeRef.current = performance.now();
     setSimulationState("running");
   };
 
-  const handlePause = () => {
-    pausedTimeRef.current = elapsedTime;
-    setSimulationState("paused");
-  }
+  const handlePause = () => setSimulationState("paused");
   const handleReset = () => resetSimulation();
   
   const handleApplySuggestion = (params: { populationSize: number, mutationRate: number }) => {
@@ -183,10 +120,9 @@ export default function Home() {
   const handleQueenPositionChange = (newChromosome: Chromosome) => {
     if (simulationState !== "running") {
       const newFitness = calculateFitness(newChromosome);
-      const newIndividual = { chromosome: newChromosome, fitness: newFitness };
-      setBestIndividual(newIndividual);
-      setDisplayIndividual(newIndividual);
+      setBestIndividual({ chromosome: newChromosome, fitness: newFitness });
       
+      const newIndividual = { chromosome: newChromosome, fitness: newFitness };
       const currentPopulation = populationRef.current;
       if (currentPopulation.length > 0) {
         let worstIndex = 0;
@@ -199,45 +135,31 @@ export default function Home() {
         newPopulation[worstIndex] = newIndividual;
         populationRef.current = newPopulation;
       } else {
-        const initialPop = createInitialPopulation(populationSize, newIndividual.chromosome);
+        const initialPop = createInitialPopulation(populationSize);
         initialPop[0] = newIndividual;
         populationRef.current = initialPop;
       }
     }
   };
 
-  const handleToggleDisplayMode = () => {
-    setDisplayMode(prev => prev === 'random' ? 'best' : 'random');
-  };
-
-  if (!displayIndividual || !bestIndividual) {
-    return (
-        <main className="min-h-screen bg-background text-foreground font-body p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-            <p>Loading...</p>
-        </main>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-background text-foreground font-body p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="text-center mb-12 relative">
-          <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary tracking-widest uppercase">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary-foreground tracking-widest uppercase">
             Queens Evolution
           </h1>
           <p className="mt-4 text-lg text-muted-foreground font-display">
             Solving the 8-Queens Puzzle with a Genetic Algorithm
           </p>
-          <div className="absolute top-0 right-0">
-            <ThemeSelector />
-          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2 flex justify-center items-start">
             <div className="w-full max-w-2xl aspect-square">
               <Chessboard 
-                queens={displayIndividual.chromosome}
+                queens={bestIndividual.chromosome}
                 onQueenPositionChange={handleQueenPositionChange}
                 isDraggable={simulationState !== "running"}
               />
@@ -249,19 +171,16 @@ export default function Home() {
               generation={generation}
               fitness={bestIndividual.fitness}
               maxFitness={MAX_FITNESS}
-              elapsedTime={elapsedTime}
             />
             <ControlsCard
               simulationState={simulationState}
               populationSize={populationSize}
               mutationRate={mutationRate}
-              displayMode={displayMode}
               onStart={handleStart}
               onPause={handlePause}
               onReset={handleReset}
               onPopulationChange={setPopulationSize}
               onMutationRateChange={setMutationRate}
-              onToggleDisplayMode={handleToggleDisplayMode}
               isSolved={bestIndividual.fitness === MAX_FITNESS}
             />
             <AiAdvisorCard
