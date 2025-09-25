@@ -1,34 +1,33 @@
 
-import type { Chromosome, Individual, Population } from "./types";
+import type { Chromosome, Individual, Population, Queen } from "./types";
 
 const BOARD_SIZE = 8;
 export const MAX_FITNESS = (BOARD_SIZE * (BOARD_SIZE - 1)) / 2; // 28 for 8 queens
 
-// Fisher-Yates shuffle to create a valid initial chromosome (no row/col conflicts)
-function shuffle(array: number[]): number[] {
-  let currentIndex = array.length,
-    randomIndex;
-  while (currentIndex !== 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
-    ];
-  }
-  return array;
-}
-
 export function createChromosome(): Chromosome {
-  const initial = Array.from({ length: BOARD_SIZE }, (_, i) => i);
-  return shuffle(initial);
+  const chromosome: Chromosome = [];
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    chromosome.push({
+      id: i,
+      row: Math.floor(Math.random() * BOARD_SIZE),
+      col: Math.floor(Math.random() * BOARD_SIZE),
+    });
+  }
+  return chromosome;
 }
 
 export function calculateFitness(chromosome: Chromosome): number {
   let clashes = 0;
   for (let i = 0; i < chromosome.length; i++) {
     for (let j = i + 1; j < chromosome.length; j++) {
-      if (Math.abs(i - j) === Math.abs(chromosome[i] - chromosome[j])) {
+      const q1 = chromosome[i];
+      const q2 = chromosome[j];
+      // Same row, same column, or same diagonal
+      if (
+        q1.row === q2.row ||
+        q1.col === q2.col ||
+        Math.abs(q1.row - q2.row) === Math.abs(q1.col - q2.col)
+      ) {
         clashes++;
       }
     }
@@ -59,54 +58,47 @@ function tournamentSelection(population: Population): Individual {
   return best!;
 }
 
-// Ordered Crossover (OX1)
+// Single-point crossover for queen positions
 function crossover(parent1: Chromosome, parent2: Chromosome): [Chromosome, Chromosome] {
-  const size = parent1.length;
-  const start = Math.floor(Math.random() * size);
-  const end = Math.floor(Math.random() * (size - start)) + start;
+    const size = parent1.length;
+    const crossoverPoint = Math.floor(Math.random() * (size - 1)) + 1;
+    
+    const child1Chromosome = [
+        ...parent1.slice(0, crossoverPoint),
+        ...parent2.slice(crossoverPoint)
+    ].map((queen, index) => ({ ...queen, id: index }));
 
-  const child1 = Array(size).fill(-1);
-  const child2 = Array(size).fill(-1);
+    const child2Chromosome = [
+        ...parent2.slice(0, crossoverPoint),
+        ...parent1.slice(crossoverPoint)
+    ].map((queen, index) => ({ ...queen, id: index }));
 
-  // Copy segment from parents to children
-  for(let i = start; i <= end; i++) {
-    child1[i] = parent1[i];
-    child2[i] = parent2[i];
-  }
-
-  // Fill remaining genes from other parent
-  let p2Index = 0;
-  let p1Index = 0;
-
-  for (let i = 0; i < size; i++) {
-    if(child1[i] === -1) {
-      while(child1.includes(parent2[p2Index])) {
-        p2Index++;
-      }
-      child1[i] = parent2[p2Index];
-    }
-    if(child2[i] === -1) {
-        while(child2.includes(parent1[p1Index])) {
-            p1Index++;
-        }
-        child2[i] = parent1[p1Index];
-    }
-  }
-  return [child1, child2];
+    return [child1Chromosome, child2Chromosome];
 }
 
 
 function mutate(chromosome: Chromosome, mutationRate: number): Chromosome {
-  if (Math.random() < mutationRate) {
-    const i = Math.floor(Math.random() * chromosome.length);
-    let j = Math.floor(Math.random() * chromosome.length);
-    while (i === j) {
-      j = Math.floor(Math.random() * chromosome.length);
+  return chromosome.map(queen => {
+    if (Math.random() < mutationRate) {
+      // Small chance to move to a completely new random square
+      if (Math.random() < 0.1) {
+        return {
+          ...queen,
+          row: Math.floor(Math.random() * BOARD_SIZE),
+          col: Math.floor(Math.random() * BOARD_SIZE),
+        }
+      }
+      // Nudge the queen to an adjacent square
+      const rowChange = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+      const colChange = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+      const newRow = Math.max(0, Math.min(BOARD_SIZE - 1, queen.row + rowChange));
+      const newCol = Math.max(0, Math.min(BOARD_SIZE - 1, queen.col + colChange));
+      return { ...queen, row: newRow, col: newCol };
     }
-    [chromosome[i], chromosome[j]] = [chromosome[j], chromosome[i]];
-  }
-  return chromosome;
+    return queen;
+  });
 }
+
 
 export function evolve(
   population: Population,

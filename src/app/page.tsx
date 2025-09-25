@@ -113,11 +113,9 @@ export default function Home() {
       const newFitness = calculateFitness(newChromosome);
       setBestIndividual({ chromosome: newChromosome, fitness: newFitness });
       
-      // We can also update the population if we want the algorithm to start from the manual position
       const newIndividual = { chromosome: newChromosome, fitness: newFitness };
       const currentPopulation = populationRef.current;
       if (currentPopulation.length > 0) {
-        // Replace the worst individual with the new one
         let worstIndex = 0;
         for (let i = 1; i < currentPopulation.length; i++) {
           if (currentPopulation[i].fitness < currentPopulation[worstIndex].fitness) {
@@ -128,7 +126,9 @@ export default function Home() {
         newPopulation[worstIndex] = newIndividual;
         populationRef.current = newPopulation;
       } else {
-        populationRef.current = [newIndividual];
+        const initialPop = createInitialPopulation(populationSize);
+        initialPop[0] = newIndividual;
+        populationRef.current = initialPop;
       }
     }
   };

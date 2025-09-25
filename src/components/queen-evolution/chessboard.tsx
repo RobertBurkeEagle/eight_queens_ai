@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { QueenIcon } from "./queen-icon";
 import { cn } from "@/lib/utils";
-import type { Chromosome } from "@/lib/types";
+import type { Chromosome, Queen } from "@/lib/types";
 
 interface ChessboardProps {
   queens: Chromosome;
@@ -14,13 +14,12 @@ interface ChessboardProps {
 export default function Chessboard({ queens, onQueenPositionChange, isDraggable = false }: ChessboardProps) {
   const boardSize = 8;
   const boardRef = useRef<HTMLDivElement>(null);
-  const [draggingQueen, setDraggingQueen] = useState<number | null>(null);
+  const [draggingQueen, setDraggingQueen] = useState<Queen | null>(null);
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, col: number) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, queen: Queen) => {
     if (!isDraggable) return e.preventDefault();
-    setDraggingQueen(col);
+    setDraggingQueen(queen);
     e.dataTransfer.effectAllowed = 'move';
-     // Use a transparent image to hide default drag preview
     const img = new Image();
     img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     e.dataTransfer.setDragImage(img, 0, 0);
@@ -43,22 +42,19 @@ export default function Chessboard({ queens, onQueenPositionChange, isDraggable 
     const droppedRow = Math.floor((clientY - boardRect.top) / squareSize);
     const droppedCol = Math.floor((clientX - boardRect.left) / squareSize);
 
-    if (droppedRow >= 0 && droppedRow < boardSize) {
-      const newQueens = [...queens];
-      // Find which queen was originally at the dropped column
-      const originalQueenCol = newQueens.findIndex((row, col) => col === droppedCol);
+    if (droppedRow >= 0 && droppedRow < boardSize && droppedCol >= 0 && droppedCol < boardSize) {
       
-      if(originalQueenCol !== -1) {
-          // Swap positions
-          const temp = newQueens[draggingQueen];
-          newQueens[draggingQueen] = newQueens[originalQueenCol];
-          newQueens[originalQueenCol] = temp;
-      } else {
-        // This case should ideally not happen if we drag from a queen
-        newQueens[draggingQueen] = droppedRow;
-      }
+      const isOccupied = queens.some(q => q.row === droppedRow && q.col === droppedCol && q.id !== draggingQueen.id);
 
-      onQueenPositionChange?.(newQueens);
+      if (!isOccupied) {
+        const newQueens = queens.map(q => {
+          if (q.id === draggingQueen.id) {
+            return { ...q, row: droppedRow, col: droppedCol };
+          }
+          return q;
+        });
+        onQueenPositionChange?.(newQueens);
+      }
     }
 
     setDraggingQueen(null);
@@ -92,19 +88,19 @@ export default function Chessboard({ queens, onQueenPositionChange, isDraggable 
       onDrop={handleDrop}
     >
       {squares}
-      {queens.map((row, col) => (
+      {queens.map((queen) => (
         <div
-          key={col}
+          key={queen.id}
           draggable={isDraggable}
-          onDragStart={(e) => handleDragStart(e, col)}
+          onDragStart={(e) => handleDragStart(e, queen)}
           onDragEnd={handleDragEnd}
           className={cn(
             "absolute w-[12.5%] h-[12.5%] p-1 transition-transform duration-500 ease-in-out",
             isDraggable && "cursor-grab",
-            draggingQueen === col && "opacity-50 cursor-grabbing"
+            draggingQueen?.id === queen.id && "opacity-50 cursor-grabbing"
           )}
           style={{
-            transform: `translate(${col * 100}%, ${row * 100}%)`,
+            transform: `translate(${queen.col * 100}%, ${queen.row * 100}%)`,
           }}
         >
           <QueenIcon className="text-primary-foreground drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]" />
