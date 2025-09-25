@@ -54,6 +54,7 @@ export default function Home() {
   const populationRef = useRef<Population>([]);
   const animationFrameId = useRef<number>();
   const startTimeRef = useRef<number>(0);
+  const pausedTimeRef = useRef<number>(0);
 
   const resetSimulation = useCallback(() => {
     setSimulationState("stopped");
@@ -66,18 +67,21 @@ export default function Home() {
     setDisplayIndividual(acceptableIndividual);
     setGeneration(0);
     setElapsedTime(0);
+    pausedTimeRef.current = 0;
   }, [populationSize]);
 
   useEffect(() => {
     // This effect runs only on the client, after initial render
     // It prevents the hydration error.
-    const initialIndividual = createAcceptableInitialIndividual();
-    setBestIndividual(initialIndividual);
-    setDisplayIndividual(initialIndividual);
+    if (typeof window !== 'undefined') {
+      const initialIndividual = createAcceptableInitialIndividual();
+      setBestIndividual(initialIndividual);
+      setDisplayIndividual(initialIndividual);
 
-    let initialPopulation = createInitialPopulation(populationSize - 1, initialIndividual.chromosome);
-    initialPopulation.push(initialIndividual);
-    populationRef.current = initialPopulation;
+      let initialPopulation = createInitialPopulation(populationSize - 1, initialIndividual.chromosome);
+      initialPopulation.push(initialIndividual);
+      populationRef.current = initialPopulation;
+    }
   }, []); // Empty dependency array ensures this runs only once on mount
 
   const runSimulation = useCallback(() => {
@@ -99,19 +103,21 @@ export default function Home() {
 
     setGeneration((prev) => prev + 1);
     setBestIndividual(bestInGeneration);
-    setElapsedTime(performance.now() - startTimeRef.current);
+    setElapsedTime(pausedTimeRef.current + (performance.now() - startTimeRef.current));
 
 
     if (bestInGeneration.fitness === MAX_FITNESS) {
       setSimulationState("stopped");
       setDisplayIndividual(bestInGeneration);
+      const finalTime = pausedTimeRef.current + (performance.now() - startTimeRef.current);
       setSimulationHistory(prev => [...prev, {
         populationSize,
         mutationRate,
         generations: generation + 1,
         finalFitness: bestInGeneration.fitness,
-        time: performance.now() - startTimeRef.current,
+        time: finalTime,
       }]);
+      setElapsedTime(finalTime);
     } else {
       animationFrameId.current = requestAnimationFrame(runSimulation);
     }
@@ -151,12 +157,16 @@ export default function Home() {
   const handleStart = () => {
     if (simulationState === 'stopped' || (bestIndividual && bestIndividual.fitness === MAX_FITNESS)) {
       resetSimulation();
+      pausedTimeRef.current = 0;
     }
     startTimeRef.current = performance.now();
     setSimulationState("running");
   };
 
-  const handlePause = () => setSimulationState("paused");
+  const handlePause = () => {
+    pausedTimeRef.current = elapsedTime;
+    setSimulationState("paused");
+  }
   const handleReset = () => resetSimulation();
   
   const handleApplySuggestion = (params: { populationSize: number, mutationRate: number }) => {
