@@ -47,6 +47,8 @@ export default function Home() {
   const [generation, setGeneration] = useState(0);
   const [bestIndividual, setBestIndividual] =
     useState<Individual>(initialIndividual);
+  const [displayIndividual, setDisplayIndividual] =
+    useState<Individual>(initialIndividual);
   const [simulationHistory, setSimulationHistory] = useState<any[]>([]);
 
   const populationRef = useRef<Population>([]);
@@ -60,6 +62,7 @@ export default function Home() {
 
     populationRef.current = initialPopulation;
     setBestIndividual(acceptableIndividual);
+    setDisplayIndividual(acceptableIndividual);
     setGeneration(0);
   }, [populationSize]);
 
@@ -89,6 +92,7 @@ export default function Home() {
 
     if (bestInGeneration.fitness === MAX_FITNESS) {
       setSimulationState("stopped");
+      setDisplayIndividual(bestInGeneration);
       setSimulationHistory(prev => [...prev, {
         populationSize,
         mutationRate,
@@ -111,6 +115,26 @@ export default function Home() {
     };
   }, [simulationState, runSimulation]);
 
+  useEffect(() => {
+    let displayInterval: NodeJS.Timeout | undefined;
+
+    if (simulationState === 'running' && populationRef.current.length > 0) {
+      displayInterval = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * populationRef.current.length);
+        setDisplayIndividual(populationRef.current[randomIndex]);
+      }, 1000);
+    } else {
+        setDisplayIndividual(bestIndividual);
+    }
+
+    return () => {
+      if (displayInterval) {
+        clearInterval(displayInterval);
+      }
+    };
+  }, [simulationState, bestIndividual]);
+
+
   const handleStart = () => {
     if (simulationState === 'stopped' || bestIndividual.fitness === MAX_FITNESS) {
       resetSimulation();
@@ -130,9 +154,10 @@ export default function Home() {
   const handleQueenPositionChange = (newChromosome: Chromosome) => {
     if (simulationState !== "running") {
       const newFitness = calculateFitness(newChromosome);
-      setBestIndividual({ chromosome: newChromosome, fitness: newFitness });
-      
       const newIndividual = { chromosome: newChromosome, fitness: newFitness };
+      setBestIndividual(newIndividual);
+      setDisplayIndividual(newIndividual);
+      
       const currentPopulation = populationRef.current;
       if (currentPopulation.length > 0) {
         let worstIndex = 0;
@@ -172,7 +197,7 @@ export default function Home() {
           <div className="lg:col-span-2 flex justify-center items-start">
             <div className="w-full max-w-2xl aspect-square">
               <Chessboard 
-                queens={bestIndividual.chromosome}
+                queens={displayIndividual.chromosome}
                 onQueenPositionChange={handleQueenPositionChange}
                 isDraggable={simulationState !== "running"}
               />
