@@ -21,10 +21,13 @@ export default function ThemeSelector() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
     const storedTheme = localStorage.getItem("queens-evolution-theme") || 'green';
-    setCurrentTheme(storedTheme);
     applyTheme(themes.find(t => t.name === storedTheme) || themes[0]);
   }, []);
+
 
   const applyTheme = (theme: Theme) => {
     const root = document.documentElement;
@@ -36,7 +39,12 @@ export default function ThemeSelector() {
   };
 
   if (!mounted) {
-    return null;
+    return (
+        <Button variant="outline" size="icon" disabled>
+          <Palette className="h-5 w-5" />
+          <span className="sr-only">Change Theme</span>
+        </Button>
+    );
   }
 
   return (
