@@ -1,39 +1,54 @@
 # 👑 Queens Evolution
 
-Welcome to **Queens Evolution**, an interactive web application that provides a real-time visualization of a genetic algorithm solving the classic 8-Queens puzzle. This project demonstrates the principles of evolutionary computation in a dynamic and engaging way, allowing users to tweak parameters and observe the impact on the solution's convergence.
+**Queens Evolution** (also known as *Eight Queens AI*) is an interactive web application that visualizes a **genetic algorithm** solving the classic *Eight Queens* problem.  
+This project demonstrates the principles of **evolutionary computation** and **heuristic optimization** in a dynamic, visual way — allowing users to tweak parameters, observe convergence, and even receive AI-powered recommendations for better performance.
 
-Built with Next.js, TypeScript, and Tailwind CSS, the application features an AI-powered advisor that suggests optimal algorithm parameters, making it a powerful educational tool for anyone interested in AI and genetic algorithms.
+Built with **Next.js**, **TypeScript**, and **Tailwind CSS**, the application provides an engaging, hands-on exploration of artificial intelligence and algorithmic problem-solving.
+
+---
+
+## 💡 Project Motivation
+
+This project was created as a **personal learning and portfolio project** to explore key AI concepts such as **genetic algorithms**, **heuristics**, and **parameter optimization**.  
+The goal was to build an interactive tool that helps visualize how algorithms evolve toward optimal solutions over time.  
+It also serves as an **educational showcase** for understanding population dynamics, fitness evaluation, and adaptive learning — implemented with modern web technologies.
+
+---
 
 ## ✨ Features
 
--   **Interactive Chessboard**: A visual representation of the 8x8 board where you can see the queens' positions evolve.
--   **Draggable Queens**: When the simulation is stopped, you can manually drag and drop queens to create your own starting chromosome.
--   **Real-Time Statistics**: Track the simulation's progress with live updates on:
-    -   **Generation Count**: How many generations have passed.
-    -   **Best Fitness**: The fitness score of the top-performing individual (a perfect score is 28).
-    -   **Elapsed Time**: A timer that tracks how long it takes to find a solution.
--   **Configurable Parameters**: Adjust the **Population Size** and **Mutation Rate** to see how they affect the algorithm's performance and speed.
--   **AI Heuristic Advisor**: Get intelligent suggestions for the population size and mutation rate from a Genkit-powered AI to optimize the simulation.
--   **Dual Display Modes**: Toggle between viewing the **Best Individual** in the current generation or cycling through **Random Individuals** every second to see the population's diversity.
--   **Customizable Themes**: Personalize the application's look and feel with several built-in color themes.
+- ♟️ **Interactive Chessboard** – Watch the queens evolve toward a valid configuration in real time.  
+- 🖱️ **Draggable Queens** – Pause the simulation and manually reposition queens to test new configurations.  
+- 📊 **Real-Time Statistics** – Track:
+  - **Generation Count**
+  - **Best Fitness** (perfect = 28)
+  - **Elapsed Time**
+- ⚙️ **Configurable Parameters** – Adjust **Population Size** and **Mutation Rate** to observe their impact.  
+- 🧠 **AI Heuristic Advisor** – A Firebase Genkit-powered advisor that suggests optimal parameter values.  
+- 🌀 **Dual Display Modes** – View the best individual in the population or cycle through random ones.  
+- 🎨 **Customizable Themes** – Choose from multiple color themes for personalized visualization.  
+- 🧾 **Educational Focus** – Built to help students and enthusiasts learn about AI evolution through visualization.
+
+---
 
 ## 🛠️ Technology Stack
 
--   **Framework**: [Next.js](https://nextjs.org/) (with App Router)
--   **Language**: [TypeScript](https://www.typescriptlang.org/)
--   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
--   **UI Components**: [ShadCN UI](https://ui.shadcn.com/)
--   **AI/Generative**: [Firebase Genkit](https://firebase.google.com/docs/genkit)
--   **Icons**: [Lucide React](https://lucide.dev/)
+- **Framework:** [Next.js](https://nextjs.org/) (App Router)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components:** [ShadCN UI](https://ui.shadcn.com/)
+- **AI / Generative:** [Firebase Genkit](https://firebase.google.com/docs/genkit)
+- **Icons:** [Lucide React](https://lucide.dev/)
+- **Hosting / Backend:** [Firebase Hosting](https://firebase.google.com/)
+
+---
 
 ## 🚀 Getting Started
 
-To get a local copy up and running, follow these simple steps.
-
 ### Prerequisites
 
--   [Node.js](https://nodejs.org/) (v18 or later recommended)
--   `npm` or your favorite package manager
+- [Node.js](https://nodejs.org/) (v18+ recommended)
+- `npm` or any compatible package manager
 
 ### Installation & Running
 
