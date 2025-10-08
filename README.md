@@ -76,7 +76,7 @@ The application will be available at `http://localhost:9002`.
 🖼️ Screenshots
 | Algorithm in Action             | Solution Found                  |
 | ------------------------------- | ------------------------------- |
-| ![Screenshot 1]( <img width="1777" height="1079" alt="image" src="https://github.com/user-attachments/assets/64a1c6bf-b938-456c-9e64-e9a5837ec9f6" /> ) | ![Screenshot 2]( <img width="1775" height="1079" alt="image" src="https://github.com/user-attachments/assets/db36acad-a9ac-4d90-8987-24ae49ae329e" /> ) |
+| <img width="1774" height="1073" alt="image" src="https://github.com/user-attachments/assets/3be1d3a3-dd88-4971-b445-5f7aa0118bac" /> | <img width="1775" height="1079" alt="image" src="https://github.com/user-attachments/assets/bf2ce110-2d42-433c-9cac-24f2114cdf24" /> | 
 
 
 👤 Author
