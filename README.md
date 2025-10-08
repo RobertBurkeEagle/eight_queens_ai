@@ -73,3 +73,20 @@ The application will be available at `http://localhost:9002`.
 -   `public/`: Static assets.
 -   `package.json`: Project dependencies and scripts.
 
+🖼️ Screenshots
+| Algorithm in Action             | Solution Found                  |
+| ------------------------------- | ------------------------------- |
+| ![Screenshot 1](<img width="1777" height="1079" alt="image" src="https://github.com/user-attachments/assets/64a1c6bf-b938-456c-9e64-e9a5837ec9f6" />
+) | ![Screenshot 2](<img width="1775" height="1079" alt="image" src="https://github.com/user-attachments/assets/db36acad-a9ac-4d90-8987-24ae49ae329e" />
+) |
+
+
+👤 Author
+
+Robert Burke
+Oklahoma Christian University
+
+🧾 License
+
+This project is open source and intended for educational and portfolio use.
+Feel free to explore, fork, and learn from it!
